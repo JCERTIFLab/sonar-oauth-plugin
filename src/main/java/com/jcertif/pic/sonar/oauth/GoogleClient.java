@@ -65,7 +65,7 @@ public class GoogleClient extends OAuthClient {
                 .withClientId(clientId)
                 .withScope("email")
                 .withResponseType("code")
-                .withRedirectUri(getSonarServerUrl())
+                .withRedirectUri(getSonarServerUrl() + "/oauth/" + getName())
                 .withScope(scope)
                 .build());
     }
