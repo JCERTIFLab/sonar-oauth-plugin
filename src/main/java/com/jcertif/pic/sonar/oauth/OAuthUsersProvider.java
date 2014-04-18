@@ -40,4 +40,5 @@ public class OAuthUsersProvider extends ExternalUsersProvider {
         LOGGER.info("Stored user : {}", user);
         return user;
     }
+    
 }

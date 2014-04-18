@@ -39,7 +39,7 @@ public class OAuthPlugin extends SonarPlugin {
     public List getExtensions() {
         return ImmutableList.of(OAuthPluginExtensionPoints.class);
     }
-    
+
     public static final class OAuthPluginExtensionPoints extends ExtensionProvider implements ServerExtension {
 
         private Settings settings;
@@ -55,9 +55,9 @@ public class OAuthPlugin extends SonarPlugin {
                 Preconditions.checkState(settings.getBoolean("sonar.authenticator.createUsers"), "Property sonar.authenticator.createUsers must be set to true.");
                 extensions.add(OAuthSecurityRealm.class);
                 extensions.add(getOAuthClientExtension());
-                extensions.add(OAuthAuthenticator.class);      
+                extensions.add(OAuthAuthenticator.class);
                 extensions.add(OAuthValidationFilter.class);
-                extensions.add(OAuthAuthenticationFilter.class);                
+                extensions.add(OAuthAuthenticationFilter.class);
                 extensions.add(OAuthLogoutFilter.class);
             }
             return extensions;
@@ -70,9 +70,12 @@ public class OAuthPlugin extends SonarPlugin {
 
         private Class<? extends OAuthClient> getOAuthClientExtension() {
             Class<? extends OAuthClient> clazz = null;
-            switch(settings.getString("sonar.oauth.providerId")){
-                case GithubClient.NAME :
+            switch (settings.getString("sonar.oauth.providerId")) {
+                case GithubClient.NAME:
                     clazz = GithubClient.class;
+                    break;
+                case GoogleClient.NAME:
+                    clazz = GoogleClient.class;
                     break;
             }
             return clazz;

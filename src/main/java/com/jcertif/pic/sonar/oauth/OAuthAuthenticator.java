@@ -37,6 +37,6 @@ public class OAuthAuthenticator extends Authenticator {
         UserDetails user = (UserDetails)context.getRequest().getAttribute(OAuthUsersProvider.OAUTH_USER_KEY);
         LOGGER.info("User : {}", user);
         return user != null;
-    }
-
+    }   
+    
 }

@@ -52,7 +52,8 @@ public class OAuthAuthenticationFilter extends ServletFilter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        ((HttpServletResponse) servletResponse).sendRedirect(oauthClient.createAuthenticationRequest());
+        OAuthClient.Request redirectRequest = oauthClient.createAuthenticationRequest();
+        ((HttpServletResponse) servletResponse).sendRedirect(redirectRequest.getUrl() + "?" + redirectRequest.getQueryParams());
     }
 
     @Override
