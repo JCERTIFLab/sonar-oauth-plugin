@@ -28,6 +28,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import org.sonar.api.security.UserDetails;
 import org.sonar.api.web.ServletFilter;
+import org.sonar.plugins.oauth.api.OAuthClient;
 
 /**
  *
@@ -36,7 +37,7 @@ import org.sonar.api.web.ServletFilter;
  */
 public class OAuthValidationFilter extends ServletFilter {
 
-    private OAuthClient oauthClient;
+    private final OAuthClient oauthClient;
 
     public OAuthValidationFilter(OAuthClient oauthClient) {
         this.oauthClient = oauthClient;
@@ -62,7 +63,6 @@ public class OAuthValidationFilter extends ServletFilter {
             servletRequest.setAttribute(OAuthUsersProvider.OAUTH_USER_KEY, user);
             filterChain.doFilter(servletRequest, servletResponse);
         }
-
 
     }
 

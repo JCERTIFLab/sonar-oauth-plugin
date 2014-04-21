@@ -30,13 +30,14 @@ import org.sonar.api.security.UserDetails;
  * @since 1.0
  */
 public class OAuthAuthenticator extends Authenticator {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuthAuthenticator.class);
-    
+
     @Override
     public boolean doAuthenticate(Context context) {
-        UserDetails user = (UserDetails)context.getRequest().getAttribute(OAuthUsersProvider.OAUTH_USER_KEY);
+        UserDetails user = (UserDetails) context.getRequest().getAttribute(OAuthUsersProvider.OAUTH_USER_KEY);
         LOGGER.info("User : {}", user);
         return user != null;
-    }   
-    
+    }
+
 }

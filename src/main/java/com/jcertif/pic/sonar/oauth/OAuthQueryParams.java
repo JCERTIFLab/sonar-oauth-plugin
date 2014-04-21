@@ -103,7 +103,7 @@ public class OAuthQueryParams {
             this.grantType = grantType;
             return this;
         }
-        
+
         public String build() {
             String result = baseParams;
             StringBuilder queryString = new StringBuilder();
@@ -115,7 +115,7 @@ public class OAuthQueryParams {
             addIfExists(queryString, RESPONSE_TYPE, responseType);
             addIfExists(queryString, CODE, code);
             addIfExists(queryString, GRANT_TYPE, grantType);
-            
+
             if (!Strings.isNullOrEmpty(queryString.toString())) {
                 result += queryString.toString();
             }

@@ -19,7 +19,9 @@
  */
 package com.jcertif.pic.sonar.oauth;
 
+import org.sonar.api.config.Settings;
 import org.sonar.api.security.Authenticator;
+import org.sonar.api.security.ExternalGroupsProvider;
 import org.sonar.api.security.ExternalUsersProvider;
 import org.sonar.api.security.SecurityRealm;
 
@@ -29,8 +31,13 @@ import org.sonar.api.security.SecurityRealm;
  * @since 1.0
  */
 public class OAuthSecurityRealm extends SecurityRealm {
-    
+
     public static final String NAME = "oauth";
+    private final Settings settings;
+
+    public OAuthSecurityRealm(Settings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public Authenticator doGetAuthenticator() {
@@ -42,11 +49,14 @@ public class OAuthSecurityRealm extends SecurityRealm {
         return new OAuthUsersProvider();
     }
 
-    
+    @Override
+    public ExternalGroupsProvider getGroupsProvider() {
+        return new OAuthGroupsProvider(settings);
+    }
+
     @Override
     public String getName() {
         return NAME;
     }
-    
-    
+
 }

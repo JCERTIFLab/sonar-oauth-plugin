@@ -27,6 +27,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import org.sonar.api.web.ServletFilter;
+import org.sonar.plugins.oauth.api.OAuthClient;
 
 /**
  *
@@ -35,7 +36,7 @@ import org.sonar.api.web.ServletFilter;
  */
 public class OAuthAuthenticationFilter extends ServletFilter {
 
-    private OAuthClient oauthClient;
+    private final OAuthClient oauthClient;
 
     public OAuthAuthenticationFilter(OAuthClient oauthClient) {
         this.oauthClient = oauthClient;

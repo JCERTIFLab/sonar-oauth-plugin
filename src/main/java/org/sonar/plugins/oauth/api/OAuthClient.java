@@ -17,8 +17,10 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package com.jcertif.pic.sonar.oauth;
+package org.sonar.plugins.oauth.api;
 
+import com.jcertif.pic.sonar.oauth.OAuthPlugin;
+import com.jcertif.pic.sonar.oauth.OAuthQueryParams;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +49,6 @@ import org.sonar.api.security.UserDetails;
 public abstract class OAuthClient implements ServerExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuthClient.class);
-    public static final String SONAR_SERVER_URL = "sonar.oauth.sonarServerUrl";
 
     public abstract String getName();
 
@@ -67,18 +68,15 @@ public abstract class OAuthClient implements ServerExtension {
     }
 
     public String getSonarServerUrl() {
-        return settings.getString(SONAR_SERVER_URL);
+        return settings.getString(OAuthPlugin.Settings.SONAR_SERVER_URL);
     }
 
     protected String getAccessToken(String accessTokenUrl, String accesMethodParams, String accessTokenMethod, String code) {
         JSONObject jsonObject;
-        switch (accessTokenMethod) {
-            case Http.Methods.POST:
-                jsonObject = doPost(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
-                break;
-            default:
-                jsonObject = doGet(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
-                break;
+        if (Http.Methods.POST.equals(accessTokenMethod)) {
+            jsonObject = doPost(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
+        } else {
+            jsonObject = doGet(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
         }
         return jsonObject.getString(OAuthQueryParams.ACCESS_TOKEN);
     }
@@ -185,8 +183,8 @@ public abstract class OAuthClient implements ServerExtension {
 
     public static class Request {
 
-        private String url;
-        private String queryParams;
+        private final String url;
+        private final String queryParams;
 
         public Request(String url, String queryParams) {
             this.url = url;

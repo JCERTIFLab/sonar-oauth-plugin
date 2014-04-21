@@ -17,27 +17,37 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package com.jcertif.pic.sonar.oauth;
+package org.sonar.plugins.oauth.providers;
 
 import com.google.common.base.Preconditions;
+import com.jcertif.pic.sonar.oauth.OAuthQueryParams;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.api.Properties;
+import org.sonar.api.Property;
 import org.sonar.api.security.UserDetails;
+import org.sonar.plugins.oauth.api.OAuthClient;
+import org.sonar.plugins.oauth.api.OAuthClient.Request;
 
 /**
  *
  * @author Martial SOMDA
  * @since 1.0
  */
-public class GithubClient extends OAuthClient {
+@Properties({
+    @Property(key = GoogleClient.Settings.AUTHORIZATION_URL, name = "Authorization URL", defaultValue = "https://accounts.google.com/o/oauth2/auth"),
+    @Property(key = GoogleClient.Settings.ACCESS_TOKEN_URL, name = "Access Token URL", defaultValue = "https://accounts.google.com/o/oauth2/token"),
+    @Property(key = GoogleClient.Settings.ACCESS_TOKEN_METHOD, name = "Access Token HTTP Method", defaultValue = "POST"),
+    @Property(key = GoogleClient.Settings.CLIENT_ID, name = "Client ID"),
+    @Property(key = GoogleClient.Settings.CLIENT_SECRET, name = "Client Secret"),
+    @Property(key = GoogleClient.Settings.SCOPE, name = "Scope", defaultValue = "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"),
+    @Property(key = GoogleClient.Settings.USER_INFO_URL, name = "User Information URL", defaultValue = "https://www.googleapis.com/plus/v1/people/me")
+})
+public class GoogleClient extends OAuthClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GithubClient.class);
-    public static final String NAME = "github";
-    private String githubUserInfoUrl = "https://api.github.com/user";
+    public static final String NAME = "google";
 
-    public GithubClient(org.sonar.api.config.Settings settings) {
+    public GoogleClient(org.sonar.api.config.Settings settings) {
         super(settings);
     }
 
@@ -63,8 +73,22 @@ public class GithubClient extends OAuthClient {
 
         return new Request(authorizationUrl, new OAuthQueryParams.Builder()
                 .withClientId(clientId)
+                .withScope("email")
+                .withResponseType("code")
+                .withRedirectUri(getSonarServerUrl() + "/oauth/" + getName())
                 .withScope(scope)
                 .build());
+    }
+
+    @Override
+    public String getUserInfoUrl() {
+        return settings.getString(Settings.USER_INFO_URL);
+    }
+
+    @Override
+    public void fillUser(JSONObject jsonObject, UserDetails user) {
+        user.setEmail(jsonObject.getJSONArray("emails").getJSONObject(0).getString("value"));
+        user.setName(jsonObject.getString("displayName"));
     }
 
     @Override
@@ -81,29 +105,21 @@ public class GithubClient extends OAuthClient {
         return new Request(accessTokenUrl, new OAuthQueryParams.Builder()
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
+                .withRedirectUri(getSonarServerUrl() + "/oauth/" + getName())
+                .withGrantType("authorization_code")
                 .build());
-    }
-
-    @Override
-    public String getUserInfoUrl() {
-        return githubUserInfoUrl;
-    }
-
-    @Override
-    public void fillUser(JSONObject jsonObject, UserDetails user) {
-        user.setEmail(jsonObject.getString("email"));
-        user.setName(jsonObject.getString("name"));
     }
 
     public static final class Settings {
 
-        public static final String AUTHORIZATION_URL = "sonar.github.authorizationUrl";
-        public static final String ACCESS_TOKEN_URL = "sonar.github.accessTokenUrl";
-        public static final String ACCESS_TOKEN_METHOD = "sonar.github.accessTokenMethod";
-        public static final String AUTHORIZATION_URL_PARAMS = "sonar.github.authorizationUrlParams";
-        public static final String ACCESS_TOKEN_URL_PARAMS = "sonar.github.accessTokenUrlParams";
-        public static final String CLIENT_ID = "sonar.github.clientId";
-        public static final String CLIENT_SECRET = "sonar.github.clientSecret";
-        public static final String SCOPE = "sonar.github.scope";
+        public static final String AUTHORIZATION_URL = "sonar.google.authorizationUrl";
+        public static final String ACCESS_TOKEN_URL = "sonar.google.accessTokenUrl";
+        public static final String ACCESS_TOKEN_METHOD = "sonar.google.accessTokenMethod";
+        public static final String AUTHORIZATION_URL_PARAMS = "sonar.google.authorizationUrlParams";
+        public static final String ACCESS_TOKEN_URL_PARAMS = "sonar.google.accessTokenUrlParams";
+        public static final String CLIENT_ID = "sonar.google.clientId.secured";
+        public static final String CLIENT_SECRET = "sonar.google.clientSecret.secured";
+        public static final String SCOPE = "sonar.google.scope";
+        public static final String USER_INFO_URL = "sonar.google.userInfoUrl";
     }
 }

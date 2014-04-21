@@ -22,39 +22,57 @@ package com.jcertif.pic.sonar.oauth;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonar.api.CoreProperties;
 import org.sonar.api.ExtensionProvider;
+import org.sonar.api.Properties;
+import org.sonar.api.Property;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.SonarPlugin;
-import org.sonar.api.config.Settings;
+import org.sonar.plugins.oauth.api.OAuthClient;
 
 /**
  *
  * @author Martial SOMDA
  * @since 1.0
  */
+@Properties({
+    @Property(key = OAuthPlugin.Settings.PROVIDER_ID, name = "OAuth Provider ID"),
+    @Property(key = OAuthPlugin.Settings.SONAR_SERVER_URL, name = "Sonar Server URL", defaultValue = "http://localhost:9000")
+})
 public class OAuthPlugin extends SonarPlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OAuthPlugin.class);
 
     @Override
     public List getExtensions() {
-        return ImmutableList.of(OAuthPluginExtensionPoints.class);
+        return ImmutableList.of(OAuthExtensions.class);
     }
 
-    public static final class OAuthPluginExtensionPoints extends ExtensionProvider implements ServerExtension {
+    public static final class OAuthExtensions extends ExtensionProvider implements ServerExtension {
 
-        private Settings settings;
+        private final org.sonar.api.config.Settings settings;
+        private final Collection<Class<? extends OAuthClient>> oauthClients;
 
-        public OAuthPluginExtensionPoints(Settings settings) {
+        public OAuthExtensions(org.sonar.api.config.Settings settings) {
             this.settings = settings;
+            Reflections reflections = new Reflections("org.sonar.plugins.oauth.providers");
+            this.oauthClients = reflections.getSubTypesOf(OAuthClient.class);
         }
 
         @Override
         public Object provide() {
             List<Class> extensions = Lists.newArrayList();
             if (isRealmEnabled()) {
-                Preconditions.checkState(settings.getBoolean("sonar.authenticator.createUsers"), "Property sonar.authenticator.createUsers must be set to true.");
+                Preconditions.checkState(settings.getBoolean(CoreProperties.CORE_AUTHENTICATOR_CREATE_USERS), "Property sonar.authenticator.createUsers must be set to true.");
+                Preconditions.checkArgument(StringUtils.isNotBlank(Settings.PROVIDER_ID), "Property is missing : " + Settings.PROVIDER_ID);
                 extensions.add(OAuthSecurityRealm.class);
-                extensions.add(getOAuthClientExtension());
+                extensions.add(getOAuthClient());
                 extensions.add(OAuthAuthenticator.class);
                 extensions.add(OAuthValidationFilter.class);
                 extensions.add(OAuthAuthenticationFilter.class);
@@ -64,21 +82,30 @@ public class OAuthPlugin extends SonarPlugin {
         }
 
         private boolean isRealmEnabled() {
-            return OAuthSecurityRealm.NAME.equalsIgnoreCase(settings.getString("sonar.security.realm"));
+            return OAuthSecurityRealm.NAME.equalsIgnoreCase(settings.getString(CoreProperties.CORE_AUTHENTICATOR_REALM));
 
         }
 
-        private Class<? extends OAuthClient> getOAuthClientExtension() {
+        private Class<? extends OAuthClient> getOAuthClient() {
             Class<? extends OAuthClient> clazz = null;
-            switch (settings.getString("sonar.oauth.providerId")) {
-                case GithubClient.NAME:
-                    clazz = GithubClient.class;
-                    break;
-                case GoogleClient.NAME:
-                    clazz = GoogleClient.class;
-                    break;
+            LOGGER.info("Registered Clients : {}", oauthClients);
+            for (Class<? extends OAuthClient> oauthClientClass : oauthClients) {
+                if (settings.getString(Settings.PROVIDER_ID).equalsIgnoreCase(
+                        oauthClientClass.getSimpleName().substring(0, oauthClientClass.getSimpleName().length() - "Client".length()))) {
+                    clazz = oauthClientClass;
+                }
+            }
+            if (null == clazz) {
+                throw new IllegalArgumentException("Unsupported oauth provider : " + settings.getString(Settings.PROVIDER_ID));
             }
             return clazz;
         }
+    }
+
+    public static final class Settings {
+
+        public static final String PROVIDER_ID = "sonar.oauth.providerId";
+        public static final String SONAR_SERVER_URL = "sonar.oauth.sonarServerUrl";
+        public static final String ADMIN_USERS = "sonar.oauth.adminUsers";
     }
 }

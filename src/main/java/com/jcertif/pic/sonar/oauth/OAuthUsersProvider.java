@@ -30,15 +30,15 @@ import org.sonar.api.security.UserDetails;
  * @since 1.0
  */
 public class OAuthUsersProvider extends ExternalUsersProvider {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuthUsersProvider.class);
     public static final String OAUTH_USER_KEY = "oauth_user";
-    
+
     @Override
     public UserDetails doGetUserDetails(Context context) {
         UserDetails user = (UserDetails) context.getRequest().getAttribute(OAUTH_USER_KEY);
         LOGGER.info("Stored user : {}", user);
         return user;
     }
-    
+
 }
