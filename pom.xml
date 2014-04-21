@@ -5,7 +5,7 @@
     <groupId>com.jcertif.pic.plugins</groupId>
     <artifactId>sonar-oauth-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>${project.groupId}:${project.artifactId}</name>
+    <name>Sonar OAuth Plugin</name>
     <packaging>sonar-plugin</packaging>
     <url>http://jcertiflab.github.io/sonar-oauth-plugin</url>
     <description>Enable user authentication and Single Sign-On through an OAuth 2 provider</description>
