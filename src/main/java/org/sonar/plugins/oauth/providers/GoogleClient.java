@@ -75,7 +75,7 @@ public class GoogleClient extends OAuthClient {
                 .withClientId(clientId)
                 .withScope("email")
                 .withResponseType("code")
-                .withRedirectUri(getSonarServerUrl() + "/oauth/" + getName())
+                .withRedirectUri(getSonarServerUrl() + "/oauth/validate")
                 .withScope(scope)
                 .build());
     }
@@ -105,7 +105,7 @@ public class GoogleClient extends OAuthClient {
         return new Request(accessTokenUrl, new OAuthQueryParams.Builder()
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
-                .withRedirectUri(getSonarServerUrl() + "/oauth/" + getName())
+                .withRedirectUri(getSonarServerUrl() + "/oauth/validate")
                 .withGrantType("authorization_code")
                 .build());
     }

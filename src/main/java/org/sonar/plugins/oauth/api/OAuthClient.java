@@ -61,6 +61,7 @@ public abstract class OAuthClient implements ServerExtension {
     public abstract Request createAuthenticationRequest();
 
     public abstract Request createAccessTokenRequest();
+    
     protected Settings settings;
 
     public OAuthClient(Settings settings) {
@@ -71,17 +72,7 @@ public abstract class OAuthClient implements ServerExtension {
         return settings.getString(OAuthPlugin.Settings.SONAR_SERVER_URL);
     }
 
-    protected String getAccessToken(String accessTokenUrl, String accesMethodParams, String accessTokenMethod, String code) {
-        JSONObject jsonObject;
-        if (Http.Methods.POST.equals(accessTokenMethod)) {
-            jsonObject = doPost(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
-        } else {
-            jsonObject = doGet(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
-        }
-        return jsonObject.getString(OAuthQueryParams.ACCESS_TOKEN);
-    }
-
-    public UserDetails verify(Map<String, String[]> responseParameters) {
+    public UserDetails validate(Map<String, String[]> responseParameters) {
         UserDetails user = null;
         String accessToken = null;
         Request acceesTokenRequest = createAccessTokenRequest();
@@ -96,6 +87,16 @@ public abstract class OAuthClient implements ServerExtension {
         return user;
     }
 
+    protected String getAccessToken(String accessTokenUrl, String accesMethodParams, String accessTokenMethod, String code) {
+        JSONObject jsonObject;
+        if (Http.Methods.POST.equals(accessTokenMethod)) {
+            jsonObject = doPost(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
+        } else {
+            jsonObject = doGet(accessTokenUrl, new OAuthQueryParams.Builder(accesMethodParams).withCode(code).build());
+        }
+        return jsonObject.getString(OAuthQueryParams.ACCESS_TOKEN);
+    }
+    
     protected UserDetails getUser(String userInfoUrl, String accessToken) {
         UserDetails user = null;
         if (userInfoUrl != null && accessToken != null) {
@@ -144,7 +145,7 @@ public abstract class OAuthClient implements ServerExtension {
         return jsonObject;
     }
 
-    private JSONObject processResponse(final HttpResponse response) throws IOException, IllegalStateException, JSONException {
+    protected JSONObject processResponse(final HttpResponse response) throws IOException, IllegalStateException, JSONException {
         JSONObject jsonObject = null;
         try {
 
@@ -164,7 +165,7 @@ public abstract class OAuthClient implements ServerExtension {
         return jsonObject;
     }
 
-    private void closeQuietly(HttpResponse response) {
+    protected void closeQuietly(HttpResponse response) {
         if (response != null) {
             HttpEntity entity = response.getEntity();
             if (entity != null) {

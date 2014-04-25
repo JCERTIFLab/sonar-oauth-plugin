@@ -45,7 +45,7 @@ public class OAuthValidationFilter extends ServletFilter {
 
     @Override
     public UrlPattern doGetPattern() {
-        return UrlPattern.create("/oauth/" + oauthClient.getName());
+        return UrlPattern.create("/oauth/validate");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class OAuthValidationFilter extends ServletFilter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        UserDetails user = oauthClient.verify(servletRequest.getParameterMap());
+        UserDetails user = oauthClient.validate(servletRequest.getParameterMap());
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
         if (user == null) {
