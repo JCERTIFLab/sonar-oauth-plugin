@@ -21,6 +21,7 @@ package org.sonar.plugins.oauth.providers;
 
 import com.google.common.base.Preconditions;
 import com.jcertif.pic.sonar.oauth.OAuthQueryParams;
+import com.jcertif.pic.sonar.oauth.OAuthUserDetails;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.sonar.api.Properties;
@@ -100,9 +101,17 @@ public class GithubClient extends OAuthClient {
     }
 
     @Override
-    public void fillUser(JSONObject jsonObject, UserDetails user) {
-        user.setEmail(jsonObject.getString("email"));
-        user.setName(jsonObject.getString("name"));
+    public OAuthUserDetails buildUser(JSONObject jsonObject) {
+        String login = jsonObject.getString("login");
+        String name = jsonObject.getString("name");
+        if (StringUtils.isBlank(name)) {
+            name = login;
+        }
+        return OAuthUserDetails.builder()
+                .login(login)
+                .name(name)
+                .email(jsonObject.getString("email"))
+                .build();
     }
 
     public static final class Settings {

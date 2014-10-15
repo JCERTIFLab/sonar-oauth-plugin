@@ -21,6 +21,7 @@ package org.sonar.plugins.oauth.providers;
 
 import com.google.common.base.Preconditions;
 import com.jcertif.pic.sonar.oauth.OAuthQueryParams;
+import com.jcertif.pic.sonar.oauth.OAuthUserDetails;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.sonar.api.Properties;
@@ -86,9 +87,12 @@ public class GoogleClient extends OAuthClient {
     }
 
     @Override
-    public void fillUser(JSONObject jsonObject, UserDetails user) {
-        user.setEmail(jsonObject.getJSONArray("emails").getJSONObject(0).getString("value"));
-        user.setName(jsonObject.getString("displayName"));
+    public OAuthUserDetails buildUser(JSONObject jsonObject) {
+        return OAuthUserDetails.builder()
+                .login(jsonObject.getString("id"))
+                .name(jsonObject.getString("displayName"))
+                .email(jsonObject.getJSONArray("emails").getJSONObject(0).getString("value"))
+                .build();
     }
 
     @Override

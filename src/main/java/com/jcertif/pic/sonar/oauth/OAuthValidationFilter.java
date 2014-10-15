@@ -54,7 +54,7 @@ public class OAuthValidationFilter extends ServletFilter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        UserDetails user = oauthClient.validate(servletRequest.getParameterMap());
+        OAuthUserDetails user = oauthClient.validate(servletRequest.getParameterMap());
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
         if (user == null) {

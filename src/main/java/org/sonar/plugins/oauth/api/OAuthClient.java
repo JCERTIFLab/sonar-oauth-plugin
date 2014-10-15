@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+
+import com.jcertif.pic.sonar.oauth.OAuthUserDetails;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -39,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.ServerExtension;
 import org.sonar.api.config.Settings;
-import org.sonar.api.security.UserDetails;
 
 /**
  *
@@ -54,7 +55,7 @@ public abstract class OAuthClient implements ServerExtension {
 
     public abstract String getUserInfoUrl();
 
-    public abstract void fillUser(JSONObject jsonObject, UserDetails user);
+    public abstract OAuthUserDetails buildUser(JSONObject jsonObject);
 
     public abstract String getAccessTokenMethod();
 
@@ -72,13 +73,13 @@ public abstract class OAuthClient implements ServerExtension {
         return settings.getString(OAuthPlugin.Settings.SONAR_SERVER_URL);
     }
 
-    public UserDetails validate(Map<String, String[]> responseParameters) {
-        UserDetails user = null;
+    public OAuthUserDetails validate(Map<String, String[]> responseParameters) {
+      OAuthUserDetails user = null;
         String accessToken = null;
-        Request acceesTokenRequest = createAccessTokenRequest();
+        Request accessTokenRequest = createAccessTokenRequest();
         // if the user can authenticate we are good to go
         if ((responseParameters.get(OAuthQueryParams.ERROR) == null || responseParameters.get(OAuthQueryParams.ERROR).length == 0)
-                && (accessToken = getAccessToken(acceesTokenRequest.getUrl(), acceesTokenRequest.getQueryParams(), getAccessTokenMethod(), responseParameters.get(OAuthQueryParams.CODE)[0])) != null) {
+                && (accessToken = getAccessToken(accessTokenRequest.getUrl(), accessTokenRequest.getQueryParams(), getAccessTokenMethod(), responseParameters.get(OAuthQueryParams.CODE)[0])) != null) {
             user = getUser(getUserInfoUrl(), accessToken);
         } else {
             LOGGER.error("Failed to authenticate user.");
@@ -97,12 +98,11 @@ public abstract class OAuthClient implements ServerExtension {
         return jsonObject.getString(OAuthQueryParams.ACCESS_TOKEN);
     }
     
-    protected UserDetails getUser(String userInfoUrl, String accessToken) {
-        UserDetails user = null;
+    protected OAuthUserDetails getUser(String userInfoUrl, String accessToken) {
+        OAuthUserDetails user = null;
         if (userInfoUrl != null && accessToken != null) {
             JSONObject jsonObject = doGet(userInfoUrl, "access_token=" + accessToken);
-            user = new UserDetails();
-            fillUser(jsonObject, user);
+            user = buildUser(jsonObject);
         }
         return user;
     }

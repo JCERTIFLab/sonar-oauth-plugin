@@ -22,7 +22,6 @@ package com.jcertif.pic.sonar.oauth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.security.Authenticator;
-import org.sonar.api.security.UserDetails;
 
 /**
  *
@@ -35,8 +34,8 @@ public class OAuthAuthenticator extends Authenticator {
 
     @Override
     public boolean doAuthenticate(Context context) {
-        UserDetails user = (UserDetails) context.getRequest().getAttribute(OAuthUsersProvider.OAUTH_USER_KEY);
-        LOGGER.info("User : {}", user);
+        OAuthUserDetails user = (OAuthUserDetails) context.getRequest().getAttribute(OAuthUsersProvider.OAUTH_USER_KEY);
+        LOGGER.info("User : {} - Username : {}", user, context.getUsername());
         return user != null;
     }
 
