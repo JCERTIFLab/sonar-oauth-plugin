@@ -36,9 +36,9 @@ public class OAuthUsersProvider extends ExternalUsersProvider {
 
     @Override
     public UserDetails doGetUserDetails(Context context) {
-        UserDetails user = (UserDetails) context.getRequest().getAttribute(OAUTH_USER_KEY);
+        OAuthUserDetails user = (OAuthUserDetails) context.getRequest().getAttribute(OAUTH_USER_KEY);
         LOGGER.info("Stored user : {}", user);
-        return user;
+        return user.getDetails();
     }
 
 }
